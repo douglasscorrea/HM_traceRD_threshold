@@ -39,6 +39,7 @@
 #include <assert.h>
 #include "TComRom.h"
 #include "TComRdCost.h"
+#include "TComPic.h"
 
 //! \ingroup TLibCommon
 //! \{
@@ -60,7 +61,7 @@ Double TComRdCost::calcRdCost( UInt uiBits, Distortion uiDistortion, Bool bFlag,
 {
   Double dRdCost = 0.0;
   Double dLambda = 0.0;
-
+  
   switch ( eDFunc )
   {
     case DF_SSE:
@@ -129,7 +130,7 @@ Double TComRdCost::calcRdCost( UInt uiBits, Distortion uiDistortion, Bool bFlag,
 #endif
     }
   }
-
+  
   return dRdCost;
 }
 

@@ -49,6 +49,13 @@
 #include <time.h>
 #include <math.h>
 
+//douglas_begin
+extern FILE *traceMatlab;
+
+void trace(TComPic *pic);
+void writeCUData(TComDataCU *CU, int **matriz0, int **matriz1);
+//douglas_end
+
 using namespace std;
 
 #if RExt__ENVIRONMENT_VARIABLE_DEBUG_AND_TEST
@@ -1185,6 +1192,10 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
       m_pcSliceEncoder->precompressSlice( pcPic );
       m_pcSliceEncoder->compressSlice   ( pcPic );
 
+      //douglas_begin
+      //trace(pcPic);
+      //douglas_end
+      
       Bool bNoBinBitConstraintViolated = (!pcSlice->isNextSlice() && !pcSlice->isNextSliceSegment());
       if (pcSlice->isNextSlice() || (bNoBinBitConstraintViolated && m_pcCfg->getSliceMode()==FIXED_NUMBER_OF_LCU))
       {
@@ -3021,5 +3032,84 @@ Void TEncGOP::dblMetric( TComPic* pcPic, UInt uiNumSlices )
   free(colSAD);
   free(rowSAD);
 }
+
+//douglas begin
+void trace(TComPic *pic)
+{
+  int i, h, w;
+  int **matrix0, **matrix1;
+  TComDataCU *CU;
+
+  h = pic->getFrameHeightInCU() * 16;
+  w = pic->getFrameWidthInCU() * 16 * 3;
+
+  matrix0 = (int **) malloc(sizeof(int *) * h);
+  matrix1 = (int **) malloc(sizeof(int *) * h);
+
+  for(i = 0; i < h; i++) {
+      matrix0[i] = (int *) malloc(sizeof(int) * w);
+      matrix1[i] = (int *) malloc(sizeof(int) * w);
+  }
+
+  for(i = 0; i < pic->getNumCUsInFrame(); i++) {
+      CU = pic->getCU(i);
+      printf("RD_CTU: %g\n", CU->getTotalCost());
+      writeCUData(CU, matrix0, matrix1);
+  }
+}
+
+void writeCUData(TComDataCU *CU, int **matrix0, int **matrix1)
+{
+  int i = 0, length = 0, totalSize;
+  int *depth, *predMode, *partSize, *skipFlag;
+
+  totalSize = CU->getTotalNumPart();
+
+  depth = (int *) malloc(sizeof(int) * totalSize);
+  predMode = (int *) malloc(sizeof(int) * totalSize);
+  partSize = (int *) malloc(sizeof(int) * totalSize);
+  skipFlag = (int *) malloc(sizeof(int) * totalSize);
+
+  fprintf(traceMatlab, "%d,%d,%d,", CU->getAddr(), CU->getCUPelX(), CU->getCUPelY());
+  printf("%d,%d,%d,", CU->getAddr(), CU->getCUPelX(), CU->getCUPelY());
+  while(i < CU->getTotalNumPart()) {
+      printf("RD_CU: %g\n", CU->getTotalCost());
+      /*depth[length] = (int) CU->getDepth(i);
+      skipFlag[length] = (int) CU->getSkipFlag(i);
+      predMode[length] = (int) CU->getPredictionMode(i);
+      partSize[length] = (int) CU->getPartitionSize(i);*/
+
+      i = i + ((16>>depth[length])) * (16>>depth[length]);
+      length++;
+  }
+
+  fprintf(traceMatlab, "%d,%d\n", length, CU->getPic()->getPOC());
+
+  /*fprintf(traceMatlab, "%d", depth[0]);
+  for(i = 1; i < length; i++) {
+      fprintf(traceMatlab, ",%d", depth[i]);
+  }  
+  fprintf(traceMatlab, "\n");
+
+  fprintf(traceMatlab, "%d", skipFlag[0]);
+  for(i = 1; i < length; i++) {
+      fprintf(traceMatlab, ",%d", skipFlag[i]);
+  }
+  fprintf(traceMatlab, "\n");
+
+  fprintf(traceMatlab, "%d", predMode[0]);
+  for(i = 1; i < length; i++) {
+      fprintf(traceMatlab, ",%d", predMode[i]);
+  }
+  fprintf(traceMatlab, "\n");
+
+  fprintf(traceMatlab, "%d", partSize[0]);
+  for(i = 1; i < length; i++) {
+      fprintf(traceMatlab, ",%d", partSize[i]);
+  }*/
+  fprintf(traceMatlab, "\n");
+
+}
+//douglas end
 
 //! \}

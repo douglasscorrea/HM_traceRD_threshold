@@ -92,6 +92,9 @@ private:
   // CU data
   // -------------------------------------------------------------------------------------------------------------------
 
+  //douglas begin
+  int            m_recTime;              ///< save the reconstruction time
+  //douglas end
   Bool*          m_skipFlag;           ///< array of skip flags
   Char*          m_pePartSize;         ///< array of partition sizes
   Char*          m_pePredMode;         ///< array of prediction modes
@@ -225,6 +228,10 @@ public:
   // member functions for CU data
   // -------------------------------------------------------------------------------------------------------------------
 
+  //douglas begin
+  Void          setRecTime            (int recTime)             { m_recTime = recTime;  }
+  int           getRecTime            ()                        { return m_recTime; }
+  //douglas end
   Char*         getPartitionSize      ()                        { return m_pePartSize;        }
   PartSize      getPartitionSize      ( UInt uiIdx )            { return static_cast<PartSize>( m_pePartSize[uiIdx] ); }
   Void          setPartitionSize      ( UInt uiIdx, PartSize uh){ m_pePartSize[uiIdx] = uh;   }

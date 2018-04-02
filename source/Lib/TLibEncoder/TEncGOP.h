@@ -149,7 +149,7 @@ public:
   TEncSlice*  getSliceEncoder()   { return m_pcSliceEncoder; }
   NalUnitType getNalUnitType( Int pocCurr, Int lastIdr, Bool isField );
   Void arrangeLongtermPicturesInRPS(TComSlice *, TComList<TComPic*>& );
-
+ 
 protected:
   TEncRateCtrl* getRateCtrl()       { return m_pcRateCtrl;  }
 

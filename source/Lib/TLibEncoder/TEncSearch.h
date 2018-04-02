@@ -50,6 +50,10 @@
 #include "TEncSbac.h"
 #include "TEncCfg.h"
 
+//douglas begin
+#include <time.h>
+//douglas end
+
 
 //! \ingroup TLibEncoder
 //! \{
@@ -137,7 +141,35 @@ public:
             TComRdCost*   pcRdCost,
             TEncSbac***   pppcRDSbacCoder,
             TEncSbac*     pcRDGoOnSbacCoder );
-
+  
+  //douglas begin
+  timespec diff(timespec start, timespec end)
+  {
+	timespec temp;
+	if ((end.tv_nsec-start.tv_nsec)<0) {
+		temp.tv_sec = end.tv_sec-start.tv_sec-1;
+		temp.tv_nsec = 1000000000+end.tv_nsec-start.tv_nsec;
+	} else {
+		temp.tv_sec = end.tv_sec-start.tv_sec;
+		temp.tv_nsec = end.tv_nsec-start.tv_nsec;
+	}
+	return temp;
+  }
+  struct timespec timer_start() 
+  {
+    struct timespec start_time;
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start_time);
+    return start_time;
+  }
+  
+  long timer_end(struct timespec start_time)
+  {
+    struct timespec end_time;
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end_time);
+    long diffInNanos = end_time.tv_nsec - start_time.tv_nsec;
+    return diffInNanos;
+  }
+  //douglas end
 protected:
 
   /// sub-function for motion vector refinement used in fractional-pel accuracy

@@ -45,6 +45,9 @@
 #include <algorithm>
 using namespace std;
 
+//douglas begin
+extern int recTime;
+//douglas end
 
 //! \ingroup TLibEncoder
 //! \{
@@ -692,6 +695,9 @@ Void TEncCu::xCompressCU( TComDataCU*& rpcBestCU, TComDataCU*& rpcTempCU, UInt u
     rpcBestCU->getTotalBits() += m_pcEntropyCoder->getNumberOfWrittenBits(); // split bits
     rpcBestCU->getTotalBins() += ((TEncBinCABAC *)((TEncSbac*)m_pcEntropyCoder->m_pcEntropyCoderIf)->getEncBinIf())->getBinsCoded();
     rpcBestCU->getTotalCost()  = m_pcRdCost->calcRdCost( rpcBestCU->getTotalBits(), rpcBestCU->getTotalDistortion() );
+    //douglas begin
+    rpcBestCU->setRecTime(recTime);
+    //douglas end
 
     // Early CU determination
     if( m_pcEncCfg->getUseEarlyCU() && rpcBestCU->isSkipped(0) )
@@ -818,6 +824,9 @@ Void TEncCu::xCompressCU( TComDataCU*& rpcBestCU, TComDataCU*& rpcTempCU, UInt u
         rpcTempCU->getTotalBins() += ((TEncBinCABAC *)((TEncSbac*)m_pcEntropyCoder->m_pcEntropyCoderIf)->getEncBinIf())->getBinsCoded();
       }
       rpcTempCU->getTotalCost()  = m_pcRdCost->calcRdCost( rpcTempCU->getTotalBits(), rpcTempCU->getTotalDistortion() );
+      //douglas begin
+      rpcBestCU->setRecTime(recTime);
+      //douglas end
 
       if( (g_uiMaxCUWidth>>uiDepth) == rpcTempCU->getSlice()->getPPS()->getMinCuDQPSize() && rpcTempCU->getSlice()->getPPS()->getUseDQP())
       {
@@ -851,6 +860,9 @@ Void TEncCu::xCompressCU( TComDataCU*& rpcBestCU, TComDataCU*& rpcTempCU, UInt u
           rpcTempCU->getTotalBits() += m_pcEntropyCoder->getNumberOfWrittenBits(); // dQP bits
           rpcTempCU->getTotalBins() += ((TEncBinCABAC *)((TEncSbac*)m_pcEntropyCoder->m_pcEntropyCoderIf)->getEncBinIf())->getBinsCoded();
           rpcTempCU->getTotalCost()  = m_pcRdCost->calcRdCost( rpcTempCU->getTotalBits(), rpcTempCU->getTotalDistortion() );
+          //douglas begin
+          rpcBestCU->setRecTime(recTime);
+          //douglas end
 #endif
 
           Bool foundNonZeroCbf = false;
@@ -1410,6 +1422,9 @@ Void TEncCu::xCheckRDCostInter( TComDataCU*& rpcBestCU, TComDataCU*& rpcTempCU, 
 
   m_pcPredSearch->encodeResAndCalcRdInterCU( rpcTempCU, m_ppcOrigYuv[uhDepth], m_ppcPredYuvTemp[uhDepth], m_ppcResiYuvTemp[uhDepth], m_ppcResiYuvBest[uhDepth], m_ppcRecoYuvTemp[uhDepth], false DEBUG_STRING_PASS_INTO(sTest) );
   rpcTempCU->getTotalCost()  = m_pcRdCost->calcRdCost( rpcTempCU->getTotalBits(), rpcTempCU->getTotalDistortion() );
+  //douglas begin
+  rpcBestCU->setRecTime(recTime);
+  //douglas end
 
 #ifdef DEBUG_STRING
   DebugInterPredResiReco(sTest, *(m_ppcPredYuvTemp[uhDepth]), *(m_ppcResiYuvBest[uhDepth]), *(m_ppcRecoYuvTemp[uhDepth]), DebugStringGetPredModeMask(rpcTempCU->getPredictionMode(0)));
@@ -1485,6 +1500,9 @@ Void TEncCu::xCheckRDCostIntra( TComDataCU *&rpcBestCU,
   rpcTempCU->getTotalBits() = m_pcEntropyCoder->getNumberOfWrittenBits();
   rpcTempCU->getTotalBins() = ((TEncBinCABAC *)((TEncSbac*)m_pcEntropyCoder->m_pcEntropyCoderIf)->getEncBinIf())->getBinsCoded();
   rpcTempCU->getTotalCost() = m_pcRdCost->calcRdCost( rpcTempCU->getTotalBits(), rpcTempCU->getTotalDistortion() );
+  //douglas begin
+  rpcBestCU->setRecTime(recTime);
+  //douglas end
 
   xCheckDQP( rpcTempCU );
 
@@ -1549,42 +1567,91 @@ Void TEncCu::xCheckIntraPCM( TComDataCU*& rpcBestCU, TComDataCU*& rpcTempCU )
  */
 Void TEncCu::xCheckBestMode( TComDataCU*& rpcBestCU, TComDataCU*& rpcTempCU, UInt uiDepth DEBUG_STRING_FN_DECLARE(sParent) DEBUG_STRING_FN_DECLARE(sTest) DEBUG_STRING_PASS_INTO(Bool bAddSizeInfo) )
 {
-  if( rpcTempCU->getTotalCost() < rpcBestCU->getTotalCost() )
-  {
-    TComYuv* pcYuv;
-    // Change Information data
-    TComDataCU* pcCU = rpcBestCU;
-    rpcBestCU = rpcTempCU;
-    rpcTempCU = pcCU;
+	if( rpcTempCU->getTotalCost() < rpcBestCU->getTotalCost() )
+  	{
+	    if(rpcTempCU->getTotalCost() < (rpcBestCU->getTotalCost()*0.92))
+	    {
+	        //bestCU <- newCU
+		    TComYuv* pcYuv;
+		    // Change Information data
+		    TComDataCU* pcCU = rpcBestCU;
+		    rpcBestCU = rpcTempCU;
+		    rpcTempCU = pcCU;
 
-    // Change Prediction data
-    pcYuv = m_ppcPredYuvBest[uiDepth];
-    m_ppcPredYuvBest[uiDepth] = m_ppcPredYuvTemp[uiDepth];
-    m_ppcPredYuvTemp[uiDepth] = pcYuv;
+		    // Change Prediction data
+		    pcYuv = m_ppcPredYuvBest[uiDepth];
+		    m_ppcPredYuvBest[uiDepth] = m_ppcPredYuvTemp[uiDepth];
+		    m_ppcPredYuvTemp[uiDepth] = pcYuv;
 
-    // Change Reconstruction data
-    pcYuv = m_ppcRecoYuvBest[uiDepth];
-    m_ppcRecoYuvBest[uiDepth] = m_ppcRecoYuvTemp[uiDepth];
-    m_ppcRecoYuvTemp[uiDepth] = pcYuv;
+		    // Change Reconstruction data
+		    pcYuv = m_ppcRecoYuvBest[uiDepth];
+		    m_ppcRecoYuvBest[uiDepth] = m_ppcRecoYuvTemp[uiDepth];
+		    m_ppcRecoYuvTemp[uiDepth] = pcYuv;
 
-    pcYuv = NULL;
-    pcCU  = NULL;
+		    pcYuv = NULL;
+		    pcCU  = NULL;
 
-    // store temp best CI for next CU coding
-    m_pppcRDSbacCoder[uiDepth][CI_TEMP_BEST]->store(m_pppcRDSbacCoder[uiDepth][CI_NEXT_BEST]);
+		    // store temp best CI for next CU coding
+		    m_pppcRDSbacCoder[uiDepth][CI_TEMP_BEST]->store(m_pppcRDSbacCoder[uiDepth][CI_NEXT_BEST]);
 
 
-#ifdef DEBUG_STRING
-    DEBUG_STRING_SWAP(sParent, sTest)
-    const PredMode predMode=rpcBestCU->getPredictionMode(0);
-    if ((DebugOptionList::DebugString_Structure.getInt()&DebugStringGetPredModeMask(predMode)) && bAddSizeInfo)
-    {
-      std::stringstream ss(stringstream::out);
-      ss <<"###: " << (predMode==MODE_INTRA?"Intra   ":"Inter   ") << partSizeToString[rpcBestCU->getPartitionSize(0)] << " CU at " << rpcBestCU->getCUPelX() << ", " << rpcBestCU->getCUPelY() << " width=" << UInt(rpcBestCU->getWidth(0)) << std::endl;
-      sParent+=ss.str();
-    }
-#endif
-  }
+			#ifdef DEBUG_STRING
+			    DEBUG_STRING_SWAP(sParent, sTest)
+			    const PredMode predMode=rpcBestCU->getPredictionMode(0);
+			    if ((DebugOptionList::DebugString_Structure.getInt()&DebugStringGetPredModeMask(predMode)) && bAddSizeInfo)
+			    {
+			      std::stringstream ss(stringstream::out);
+			      ss <<"###: " << (predMode==MODE_INTRA?"Intra   ":"Inter   ") << partSizeToString[rpcBestCU->getPartitionSize(0)] << " CU at " << rpcBestCU->getCUPelX() << ", " << rpcBestCU->getCUPelY() << " width=" << UInt(rpcBestCU->getWidth(0)) << std::endl;
+			      sParent+=ss.str();
+			    }
+			#endif
+		}
+		else 
+		{
+			if(rpcBestCU->getRecTime() < (rpcTempCU->getRecTime()*0.9))
+			{
+				// keep current best mode
+			}
+			else
+			{
+				// bestCU <- newCU
+	            //vence
+	            TComYuv* pcYuv;
+	            // Change Information data
+	            TComDataCU* pcCU = rpcBestCU;
+	            rpcBestCU = rpcTempCU;
+	            rpcTempCU = pcCU;
+
+	            // Change Prediction data
+	            pcYuv = m_ppcPredYuvBest[uiDepth];
+	            m_ppcPredYuvBest[uiDepth] = m_ppcPredYuvTemp[uiDepth];
+	            m_ppcPredYuvTemp[uiDepth] = pcYuv;
+
+	            // Change Reconstruction data
+	            pcYuv = m_ppcRecoYuvBest[uiDepth];
+	            m_ppcRecoYuvBest[uiDepth] = m_ppcRecoYuvTemp[uiDepth];
+	            m_ppcRecoYuvTemp[uiDepth] = pcYuv;
+
+	            pcYuv = NULL;
+	            pcCU  = NULL;
+
+	            // store temp best CI for next CU coding
+	            m_pppcRDSbacCoder[uiDepth][CI_TEMP_BEST]->store(m_pppcRDSbacCoder[uiDepth][CI_NEXT_BEST]);
+
+
+	        #ifdef DEBUG_STRING
+	            DEBUG_STRING_SWAP(sParent, sTest)
+	            const PredMode predMode=rpcBestCU->getPredictionMode(0);
+	            if ((DebugOptionList::DebugString_Structure.getInt()&DebugStringGetPredModeMask(predMode)) && bAddSizeInfo)
+	            {
+	              std::stringstream ss(stringstream::out);
+	              ss <<"###: " << (predMode==MODE_INTRA?"Intra   ":"Inter   ") << partSizeToString[rpcBestCU->getPartitionSize(0)] << " CU at " << rpcBestCU->getCUPelX() << ", " << rpcBestCU->getCUPelY() << " width=" << UInt(rpcBestCU->getWidth(0)) << std::endl;
+	              sParent+=ss.str();
+	            }
+	        #endif
+			}
+		}
+  	}
 }
 
 Void TEncCu::xCheckDQP( TComDataCU* pcCU )
@@ -1601,6 +1668,9 @@ Void TEncCu::xCheckDQP( TComDataCU* pcCU )
       pcCU->getTotalBits() += m_pcEntropyCoder->getNumberOfWrittenBits(); // dQP bits
       pcCU->getTotalBins() += ((TEncBinCABAC *)((TEncSbac*)m_pcEntropyCoder->m_pcEntropyCoderIf)->getEncBinIf())->getBinsCoded();
       pcCU->getTotalCost() = m_pcRdCost->calcRdCost( pcCU->getTotalBits(), pcCU->getTotalDistortion() );
+      //douglas begin
+      pcCU->setRecTime(recTime);
+      //douglas end
 #endif
     }
     else
