@@ -101,6 +101,10 @@ std::istringstream &operator>>(std::istringstream &in, GOPEntry &entry);     //i
 class TEncCfg
 {
 protected:
+  //douglas_bein
+  Int       m_RDfactor;
+  Int       m_Efactor;
+  //douglas_end
   //==== File I/O ========
   Int       m_iFrameRate;
   Int       m_FrameSkip;
@@ -369,6 +373,13 @@ public:
 
   virtual ~TEncCfg()
   {}
+
+  //douglas_begin
+  Void   setRDfactor                         (Int i)   { m_RDfactor = i; }
+  Void   setEfactor                          (Int i)   { m_Efactor = i; }
+  Int   getRDfactor                         ()   { return m_RDfactor; }
+  Int   getEfactor                          ()   { return m_Efactor; }
+  //douglas_end
 
   Void setProfile(Profile::Name profile) { m_profile = profile; }
   Void setLevel(Level::Tier tier, Level::Name level) { m_levelTier = tier; m_level = level; }

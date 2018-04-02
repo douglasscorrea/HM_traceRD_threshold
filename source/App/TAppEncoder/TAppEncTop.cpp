@@ -229,6 +229,12 @@ Void TAppEncTop::xInitLibCfg()
   {
     m_bLFCrossSliceBoundaryFlag = true;
   }
+  
+  //douglas_begin
+  m_cTEncTop.setRDfactor                                          ( m_RDfactor );
+  m_cTEncTop.setEfactor                                           ( m_Efactor );
+  //douglas_end
+
   m_cTEncTop.setLFCrossSliceBoundaryFlag                          ( m_bLFCrossSliceBoundaryFlag );
   m_cTEncTop.setUseSAO                                            ( m_bUseSAO );
   m_cTEncTop.setMaxNumOffsetsPerPic                               ( m_maxNumOffsetsPerPic);

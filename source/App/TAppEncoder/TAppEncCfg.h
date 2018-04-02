@@ -54,6 +54,10 @@
 class TAppEncCfg
 {
 protected:
+  //douglas_bein
+  Int       m_RDfactor;
+  Int       m_Efactor;
+  //douglas_end
   // file I/O
   Char*     m_pchInputFile;                                   ///< source file name
   Char*     m_pchBitstreamFile;                               ///< output bitstream file

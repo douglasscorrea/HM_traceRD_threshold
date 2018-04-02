@@ -1567,9 +1567,11 @@ Void TEncCu::xCheckIntraPCM( TComDataCU*& rpcBestCU, TComDataCU*& rpcTempCU )
  */
 Void TEncCu::xCheckBestMode( TComDataCU*& rpcBestCU, TComDataCU*& rpcTempCU, UInt uiDepth DEBUG_STRING_FN_DECLARE(sParent) DEBUG_STRING_FN_DECLARE(sTest) DEBUG_STRING_PASS_INTO(Bool bAddSizeInfo) )
 {
+  Double RDfactor =  (100 - (Double)m_pcEncCfg->getRDfactor())/100;
+  Double Efactor = (100 - (Double)m_pcEncCfg->getEfactor())/100;
 	if( rpcTempCU->getTotalCost() < rpcBestCU->getTotalCost() )
   	{
-	    if(rpcTempCU->getTotalCost() < (rpcBestCU->getTotalCost()*0.92))
+	    if(rpcTempCU->getTotalCost() < (rpcBestCU->getTotalCost()*RDfactor))
 	    {
 	        //bestCU <- newCU
 		    TComYuv* pcYuv;
@@ -1608,7 +1610,7 @@ Void TEncCu::xCheckBestMode( TComDataCU*& rpcBestCU, TComDataCU*& rpcTempCU, UIn
 		}
 		else 
 		{
-			if(rpcBestCU->getRecTime() < (rpcTempCU->getRecTime()*0.9))
+			if(rpcBestCU->getRecTime() < (rpcTempCU->getRecTime()*Efactor))
 			{
 				// keep current best mode
 			}

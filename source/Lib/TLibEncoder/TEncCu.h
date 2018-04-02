@@ -65,7 +65,9 @@ class TEncSlice;
 class TEncCu
 {
 private:
-
+  //douglas_begin
+  TEncTop*                m_pcEncTop;
+  //douglas_end
   TComDataCU**            m_ppcBestCU;      ///< Best CUs in each depth
   TComDataCU**            m_ppcTempCU;      ///< Temporary CUs in each depth
   UChar                   m_uhTotalDepth;

@@ -654,6 +654,10 @@ Bool TAppEncCfg::parseCfg( Int argc, Char* argv[] )
   ("help",                                            do_help,                                          false, "this help text")
   ("c",    po::parseConfigFile, "configuration file name")
 
+  //douglas_begin
+  ("RDfactor",                                        m_RDfactor,                               			1, "RD factor command linear")
+  ("Efactor",										  m_Efactor,                               				1, "E factor command linear")
+  //douglas_end
   // File, I/O and source parameters
   ("InputFile,i",                                     cfg_InputFile,                               string(""), "Original YUV input file name")
   ("BitstreamFile,b",                                 cfg_BitstreamFile,                           string(""), "Bitstream output file name")
