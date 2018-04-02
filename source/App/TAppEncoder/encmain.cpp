@@ -41,7 +41,7 @@
 #include "TAppCommon/program_options_lite.h"
 
 //douglas begin
-FILE *traceMatlab;
+FILE *traceRD;
 //douglas end
 
 //! \ingroup TAppEncoder
@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
   TAppEncTop  cTAppEncTop;
 
   //douglas begin
-  traceMatlab = fopen("traceRD.csv", "w");
+  traceRD = fopen("traceRD.csv", "w");
   //douglas end
   
   // print information

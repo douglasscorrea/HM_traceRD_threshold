@@ -50,10 +50,10 @@
 #include <math.h>
 
 //douglas_begin
-extern FILE *traceMatlab;
+extern FILE *traceRD;
 
 void trace(TComPic *pic);
-void writeCUData(TComDataCU *CU, int **matriz0, int **matriz1);
+void writeCUData(TComDataCU *CU);
 //douglas_end
 
 using namespace std;
@@ -1193,7 +1193,7 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
       m_pcSliceEncoder->compressSlice   ( pcPic );
 
       //douglas_begin
-      //trace(pcPic);
+      trace(pcPic);
       //douglas_end
       
       Bool bNoBinBitConstraintViolated = (!pcSlice->isNextSlice() && !pcSlice->isNextSliceSegment());
@@ -3036,42 +3036,32 @@ Void TEncGOP::dblMetric( TComPic* pcPic, UInt uiNumSlices )
 //douglas begin
 void trace(TComPic *pic)
 {
-  int i, h, w;
-  int **matrix0, **matrix1;
+  int i;
   TComDataCU *CU;
-
-  h = pic->getFrameHeightInCU() * 16;
-  w = pic->getFrameWidthInCU() * 16 * 3;
-
-  matrix0 = (int **) malloc(sizeof(int *) * h);
-  matrix1 = (int **) malloc(sizeof(int *) * h);
-
-  for(i = 0; i < h; i++) {
-      matrix0[i] = (int *) malloc(sizeof(int) * w);
-      matrix1[i] = (int *) malloc(sizeof(int) * w);
-  }
 
   for(i = 0; i < pic->getNumCUsInFrame(); i++) {
       CU = pic->getCU(i);
-      printf("RD_CTU: %g\n", CU->getTotalCost());
-      writeCUData(CU, matrix0, matrix1);
+
+      fprintf(traceRD, "%d,%d,%g\n", CU->getPic()->getPOC(), i, CU->getTotalCost());
+      //printf("%d,%d,%g\n", CU->getPic()->getPOC(), i, CU->getTotalCost());
+      //writeCUData(CU);
   }
 }
 
-void writeCUData(TComDataCU *CU, int **matrix0, int **matrix1)
+void writeCUData(TComDataCU *CU)
 {
   int i = 0, length = 0, totalSize;
-  int *depth, *predMode, *partSize, *skipFlag;
+  int *depth;
 
   totalSize = CU->getTotalNumPart();
 
   depth = (int *) malloc(sizeof(int) * totalSize);
-  predMode = (int *) malloc(sizeof(int) * totalSize);
+  /*predMode = (int *) malloc(sizeof(int) * totalSize);
   partSize = (int *) malloc(sizeof(int) * totalSize);
-  skipFlag = (int *) malloc(sizeof(int) * totalSize);
+  skipFlag = (int *) malloc(sizeof(int) * totalSize);*/
 
-  fprintf(traceMatlab, "%d,%d,%d,", CU->getAddr(), CU->getCUPelX(), CU->getCUPelY());
-  printf("%d,%d,%d,", CU->getAddr(), CU->getCUPelX(), CU->getCUPelY());
+  fprintf(traceRD, "%d,%d,%d,", CU->getAddr(), CU->getCUPelX(), CU->getCUPelY());
+  printf("%d,%d,%d,\n", CU->getAddr(), CU->getCUPelX(), CU->getCUPelY());
   while(i < CU->getTotalNumPart()) {
       printf("RD_CU: %g\n", CU->getTotalCost());
       /*depth[length] = (int) CU->getDepth(i);
@@ -3083,7 +3073,7 @@ void writeCUData(TComDataCU *CU, int **matrix0, int **matrix1)
       length++;
   }
 
-  fprintf(traceMatlab, "%d,%d\n", length, CU->getPic()->getPOC());
+  fprintf(traceRD, "%d,%d\n", length, CU->getPic()->getPOC());
 
   /*fprintf(traceMatlab, "%d", depth[0]);
   for(i = 1; i < length; i++) {
@@ -3107,7 +3097,7 @@ void writeCUData(TComDataCU *CU, int **matrix0, int **matrix1)
   for(i = 1; i < length; i++) {
       fprintf(traceMatlab, ",%d", partSize[i]);
   }*/
-  fprintf(traceMatlab, "\n");
+  fprintf(traceRD, "\n");
 
 }
 //douglas end
